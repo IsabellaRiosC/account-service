@@ -1,0 +1,33 @@
+spring:
+  config:
+    import: "optional:configserver:"
+  cloud:
+    config:
+      discovery:
+        enabled: false
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/account_test
+
+eureka:
+  client:
+    enabled: false
+
+security:
+  jwt:
+    secret: change_this_secret_in_real_env_min_32_chars
+
+account:
+  seed:
+    enabled: false
+  customer-service:
+    base-url: http://localhost:7002
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env
+  endpoint:
+    health:
+      show-details: always

@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AccountResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">account-service</a> &gt; <a href="index.source.html" class="el_package">com.nttdata.accountservice.generated.model</a> &gt; <span class="el_source">AccountResponse.java</span></div><h1>AccountResponse.java</h1><pre class="source lang-java linenums">package com.nttdata.accountservice.generated.model;
+
+import java.net.URI;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import java.time.OffsetDateTime;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.openapitools.jackson.nullable.JsonNullable;
+import java.time.OffsetDateTime;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+
+import java.util.*;
+import jakarta.annotation.Generated;
+
+/**
+ * AccountResponse
+ */
+
+@Generated(value = &quot;org.openapitools.codegen.languages.SpringCodegen&quot;, date = &quot;2026-03-23T20:25:32.935483400-05:00[America/Lima]&quot;, comments = &quot;Generator version: 7.5.0&quot;)
+<span class="fc" id="L24">public class AccountResponse {</span>
+
+  private String accountId;
+
+  private String customerId;
+
+  private String accountNumber;
+
+  private String accountType;
+
+  private String currency;
+
+  private String status;
+
+  private Double balance;
+
+  private String createdBy;
+
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+  private OffsetDateTime createdAt;
+
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+  private OffsetDateTime updatedAt;
+
+  public AccountResponse accountId(String accountId) {
+<span class="nc" id="L49">    this.accountId = accountId;</span>
+<span class="nc" id="L50">    return this;</span>
+  }
+
+  /**
+   * Get accountId
+   * @return accountId
+  */
+  
+  @Schema(name = &quot;accountId&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;accountId&quot;)
+  public String getAccountId() {
+<span class="fc" id="L61">    return accountId;</span>
+  }
+
+  public void setAccountId(String accountId) {
+<span class="fc" id="L65">    this.accountId = accountId;</span>
+<span class="fc" id="L66">  }</span>
+
+  public AccountResponse customerId(String customerId) {
+<span class="nc" id="L69">    this.customerId = customerId;</span>
+<span class="nc" id="L70">    return this;</span>
+  }
+
+  /**
+   * Get customerId
+   * @return customerId
+  */
+  
+  @Schema(name = &quot;customerId&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;customerId&quot;)
+  public String getCustomerId() {
+<span class="fc" id="L81">    return customerId;</span>
+  }
+
+  public void setCustomerId(String customerId) {
+<span class="fc" id="L85">    this.customerId = customerId;</span>
+<span class="fc" id="L86">  }</span>
+
+  public AccountResponse accountNumber(String accountNumber) {
+<span class="nc" id="L89">    this.accountNumber = accountNumber;</span>
+<span class="nc" id="L90">    return this;</span>
+  }
+
+  /**
+   * Get accountNumber
+   * @return accountNumber
+  */
+  
+  @Schema(name = &quot;accountNumber&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;accountNumber&quot;)
+  public String getAccountNumber() {
+<span class="fc" id="L101">    return accountNumber;</span>
+  }
+
+  public void setAccountNumber(String accountNumber) {
+<span class="fc" id="L105">    this.accountNumber = accountNumber;</span>
+<span class="fc" id="L106">  }</span>
+
+  public AccountResponse accountType(String accountType) {
+<span class="nc" id="L109">    this.accountType = accountType;</span>
+<span class="nc" id="L110">    return this;</span>
+  }
+
+  /**
+   * Get accountType
+   * @return accountType
+  */
+  
+  @Schema(name = &quot;accountType&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;accountType&quot;)
+  public String getAccountType() {
+<span class="fc" id="L121">    return accountType;</span>
+  }
+
+  public void setAccountType(String accountType) {
+<span class="fc" id="L125">    this.accountType = accountType;</span>
+<span class="fc" id="L126">  }</span>
+
+  public AccountResponse currency(String currency) {
+<span class="nc" id="L129">    this.currency = currency;</span>
+<span class="nc" id="L130">    return this;</span>
+  }
+
+  /**
+   * Get currency
+   * @return currency
+  */
+  
+  @Schema(name = &quot;currency&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;currency&quot;)
+  public String getCurrency() {
+<span class="fc" id="L141">    return currency;</span>
+  }
+
+  public void setCurrency(String currency) {
+<span class="fc" id="L145">    this.currency = currency;</span>
+<span class="fc" id="L146">  }</span>
+
+  public AccountResponse status(String status) {
+<span class="nc" id="L149">    this.status = status;</span>
+<span class="nc" id="L150">    return this;</span>
+  }
+
+  /**
+   * Get status
+   * @return status
+  */
+  
+  @Schema(name = &quot;status&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;status&quot;)
+  public String getStatus() {
+<span class="fc" id="L161">    return status;</span>
+  }
+
+  public void setStatus(String status) {
+<span class="fc" id="L165">    this.status = status;</span>
+<span class="fc" id="L166">  }</span>
+
+  public AccountResponse balance(Double balance) {
+<span class="nc" id="L169">    this.balance = balance;</span>
+<span class="nc" id="L170">    return this;</span>
+  }
+
+  /**
+   * Get balance
+   * @return balance
+  */
+  
+  @Schema(name = &quot;balance&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;balance&quot;)
+  public Double getBalance() {
+<span class="fc" id="L181">    return balance;</span>
+  }
+
+  public void setBalance(Double balance) {
+<span class="fc" id="L185">    this.balance = balance;</span>
+<span class="fc" id="L186">  }</span>
+
+  public AccountResponse createdBy(String createdBy) {
+<span class="nc" id="L189">    this.createdBy = createdBy;</span>
+<span class="nc" id="L190">    return this;</span>
+  }
+
+  /**
+   * Get createdBy
+   * @return createdBy
+  */
+  
+  @Schema(name = &quot;createdBy&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;createdBy&quot;)
+  public String getCreatedBy() {
+<span class="fc" id="L201">    return createdBy;</span>
+  }
+
+  public void setCreatedBy(String createdBy) {
+<span class="fc" id="L205">    this.createdBy = createdBy;</span>
+<span class="fc" id="L206">  }</span>
+
+  public AccountResponse createdAt(OffsetDateTime createdAt) {
+<span class="nc" id="L209">    this.createdAt = createdAt;</span>
+<span class="nc" id="L210">    return this;</span>
+  }
+
+  /**
+   * Get createdAt
+   * @return createdAt
+  */
+  @Valid 
+  @Schema(name = &quot;createdAt&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;createdAt&quot;)
+  public OffsetDateTime getCreatedAt() {
+<span class="fc" id="L221">    return createdAt;</span>
+  }
+
+  public void setCreatedAt(OffsetDateTime createdAt) {
+<span class="fc" id="L225">    this.createdAt = createdAt;</span>
+<span class="fc" id="L226">  }</span>
+
+  public AccountResponse updatedAt(OffsetDateTime updatedAt) {
+<span class="nc" id="L229">    this.updatedAt = updatedAt;</span>
+<span class="nc" id="L230">    return this;</span>
+  }
+
+  /**
+   * Get updatedAt
+   * @return updatedAt
+  */
+  @Valid 
+  @Schema(name = &quot;updatedAt&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;updatedAt&quot;)
+  public OffsetDateTime getUpdatedAt() {
+<span class="fc" id="L241">    return updatedAt;</span>
+  }
+
+  public void setUpdatedAt(OffsetDateTime updatedAt) {
+<span class="fc" id="L245">    this.updatedAt = updatedAt;</span>
+<span class="fc" id="L246">  }</span>
+
+  @Override
+  public boolean equals(Object o) {
+<span class="nc bnc" id="L250" title="All 2 branches missed.">    if (this == o) {</span>
+<span class="nc" id="L251">      return true;</span>
+    }
+<span class="nc bnc" id="L253" title="All 4 branches missed.">    if (o == null || getClass() != o.getClass()) {</span>
+<span class="nc" id="L254">      return false;</span>
+    }
+<span class="nc" id="L256">    AccountResponse accountResponse = (AccountResponse) o;</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">    return Objects.equals(this.accountId, accountResponse.accountId) &amp;&amp;</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">        Objects.equals(this.customerId, accountResponse.customerId) &amp;&amp;</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">        Objects.equals(this.accountNumber, accountResponse.accountNumber) &amp;&amp;</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">        Objects.equals(this.accountType, accountResponse.accountType) &amp;&amp;</span>
+<span class="nc bnc" id="L261" title="All 2 branches missed.">        Objects.equals(this.currency, accountResponse.currency) &amp;&amp;</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">        Objects.equals(this.status, accountResponse.status) &amp;&amp;</span>
+<span class="nc bnc" id="L263" title="All 2 branches missed.">        Objects.equals(this.balance, accountResponse.balance) &amp;&amp;</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">        Objects.equals(this.createdBy, accountResponse.createdBy) &amp;&amp;</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">        Objects.equals(this.createdAt, accountResponse.createdAt) &amp;&amp;</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">        Objects.equals(this.updatedAt, accountResponse.updatedAt);</span>
+  }
+
+  @Override
+  public int hashCode() {
+<span class="nc" id="L271">    return Objects.hash(accountId, customerId, accountNumber, accountType, currency, status, balance, createdBy, createdAt, updatedAt);</span>
+  }
+
+  @Override
+  public String toString() {
+<span class="nc" id="L276">    StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L277">    sb.append(&quot;class AccountResponse {\n&quot;);</span>
+<span class="nc" id="L278">    sb.append(&quot;    accountId: &quot;).append(toIndentedString(accountId)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L279">    sb.append(&quot;    customerId: &quot;).append(toIndentedString(customerId)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L280">    sb.append(&quot;    accountNumber: &quot;).append(toIndentedString(accountNumber)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L281">    sb.append(&quot;    accountType: &quot;).append(toIndentedString(accountType)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L282">    sb.append(&quot;    currency: &quot;).append(toIndentedString(currency)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L283">    sb.append(&quot;    status: &quot;).append(toIndentedString(status)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L284">    sb.append(&quot;    balance: &quot;).append(toIndentedString(balance)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L285">    sb.append(&quot;    createdBy: &quot;).append(toIndentedString(createdBy)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L286">    sb.append(&quot;    createdAt: &quot;).append(toIndentedString(createdAt)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L287">    sb.append(&quot;    updatedAt: &quot;).append(toIndentedString(updatedAt)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L288">    sb.append(&quot;}&quot;);</span>
+<span class="nc" id="L289">    return sb.toString();</span>
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(Object o) {
+<span class="nc bnc" id="L297" title="All 2 branches missed.">    if (o == null) {</span>
+<span class="nc" id="L298">      return &quot;null&quot;;</span>
+    }
+<span class="nc" id="L300">    return o.toString().replace(&quot;\n&quot;, &quot;\n    &quot;);</span>
+  }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,200 @@
+openapi: 3.0.3
+info:
+  title: Account Service API
+  description: Contract-first API for accounts
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:7003
+
+tags:
+  - name: Accounts
+    description: Account operations
+
+paths:
+  /api/accounts:
+    post:
+      tags: [Accounts]
+      operationId: createAccount
+      summary: Create account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountRequest'
+      responses:
+        '201':
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+    get:
+      tags: [Accounts]
+      operationId: getAccounts
+      summary: List accounts
+      parameters:
+        - name: customerId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountResponse'
+
+  /api/accounts/{accountId}:
+    get:
+      tags: [Accounts]
+      operationId: getAccountById
+      summary: Get account by id
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+    put:
+      tags: [Accounts]
+      operationId: updateAccount
+      summary: Update account
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAccountRequest'
+      responses:
+        '200':
+          description: Account updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+    delete:
+      tags: [Accounts]
+      operationId: deleteAccount
+      summary: Delete account
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Account deleted
+
+  /api/accounts/{accountId}/operations:
+    post:
+      tags: [Accounts]
+      operationId: operateBalance
+      summary: Apply balance operation
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BalanceOperationRequest'
+      responses:
+        '200':
+          description: Operation applied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+
+components:
+  schemas:
+    CreateAccountRequest:
+      type: object
+      required: [customerId, accountNumber, accountType, currency]
+      properties:
+        customerId:
+          type: string
+        accountNumber:
+          type: string
+        accountType:
+          type: string
+          enum: [SAVINGS, CHECKING]
+        currency:
+          type: string
+          example: PEN
+        initialBalance:
+          type: number
+          format: double
+          default: 0
+
+    UpdateAccountRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ACTIVE, BLOCKED, CLOSED]
+
+    BalanceOperationRequest:
+      type: object
+      required: [amount, operationType, operationId]
+      properties:
+        amount:
+          type: number
+          format: double
+        operationType:
+          type: string
+          enum: [CREDIT, DEBIT]
+        operationId:
+          type: string
+
+    AccountResponse:
+      type: object
+      properties:
+        accountId:
+          type: string
+        customerId:
+          type: string
+        accountNumber:
+          type: string
+        accountType:
+          type: string
+        currency:
+          type: string
+        status:
+          type: string
+        balance:
+          type: number
+          format: double
+        createdBy:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

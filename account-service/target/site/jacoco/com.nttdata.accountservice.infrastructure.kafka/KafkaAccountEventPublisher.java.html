@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KafkaAccountEventPublisher.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">account-service</a> &gt; <a href="index.source.html" class="el_package">com.nttdata.accountservice.infrastructure.kafka</a> &gt; <span class="el_source">KafkaAccountEventPublisher.java</span></div><h1>KafkaAccountEventPublisher.java</h1><pre class="source lang-java linenums">package com.nttdata.accountservice.infrastructure.kafka;
+
+import com.nttdata.accountservice.api.dto.AccountEventAvroDto;
+import com.nttdata.accountservice.domain.port.AccountEventPublisherPort;
+import java.util.concurrent.CompletableFuture;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
+
+<span class="fc" id="L14">@Slf4j</span>
+@Component
+public class KafkaAccountEventPublisher implements AccountEventPublisherPort {
+
+    private final KafkaTemplate&lt;String, AccountEventAvroDto&gt; kafkaTemplate;
+
+    public KafkaAccountEventPublisher(@Qualifier(&quot;accountEventKafkaTemplate&quot;)
+<span class="fc" id="L21">                                      KafkaTemplate&lt;String, AccountEventAvroDto&gt; kafkaTemplate) {</span>
+<span class="fc" id="L22">        this.kafkaTemplate = kafkaTemplate;</span>
+<span class="fc" id="L23">    }</span>
+
+    @Value(&quot;${account.kafka.topic.account-created:account-created-events}&quot;)
+    private String createdTopic;
+
+    @Value(&quot;${account.kafka.topic.account-updated:account-updated-events}&quot;)
+    private String updatedTopic;
+
+    @Value(&quot;${account.kafka.topic.account-operation:account-operation-events}&quot;)
+    private String operationTopic;
+
+    @Override
+    public Mono&lt;Void&gt; publish(AccountEventAvroDto event) {
+<span class="nc" id="L36">        String topic = resolveTopic(event.getEventType());</span>
+
+<span class="nc" id="L38">        return Mono.fromFuture(send(topic, event.getAccountId(), event))</span>
+<span class="nc" id="L39">                .doOnNext(result -&gt; log.info(&quot;Kafka event published topic={} accountId={} offset={}&quot;,</span>
+                        topic,
+<span class="nc" id="L41">                        event.getAccountId(),</span>
+<span class="nc" id="L42">                        result.getRecordMetadata().offset()))</span>
+<span class="nc" id="L43">                .doOnError(ex -&gt; log.error(&quot;Kafka publish error topic={} accountId={}&quot;, topic, event.getAccountId(), ex))</span>
+<span class="nc" id="L44">                .onErrorResume(ex -&gt; Mono.empty())</span>
+<span class="nc" id="L45">                .then();</span>
+    }
+
+    private CompletableFuture&lt;SendResult&lt;String, AccountEventAvroDto&gt;&gt; send(
+            String topic,
+            String key,
+            AccountEventAvroDto payload) {
+<span class="nc" id="L52">        return kafkaTemplate.send(topic, key, payload);</span>
+    }
+
+
+    private String resolveTopic(String eventType) {
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        if (&quot;ACCOUNT_CREATED&quot;.equals(eventType)) {</span>
+<span class="nc" id="L58">            return createdTopic;</span>
+        }
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        if (&quot;ACCOUNT_UPDATED&quot;.equals(eventType)) {</span>
+<span class="nc" id="L61">            return updatedTopic;</span>
+        }
+<span class="nc" id="L63">        return operationTopic;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

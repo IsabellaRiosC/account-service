@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GlobalExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">account-service</a> &gt; <a href="index.source.html" class="el_package">com.nttdata.accountservice.api</a> &gt; <span class="el_source">GlobalExceptionHandler.java</span></div><h1>GlobalExceptionHandler.java</h1><pre class="source lang-java linenums">package com.nttdata.accountservice.api;
+
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@ControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
+<span class="fc" id="L19">public class GlobalExceptionHandler {</span>
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public Mono&lt;ResponseEntity&lt;Map&lt;String, Object&gt;&gt;&gt; handleResponseStatusException(ResponseStatusException ex, ServerWebExchange exchange) {
+<span class="nc" id="L23">        Map&lt;String, Object&gt; errorBody = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L24">        errorBody.put(&quot;status&quot;, ex.getStatusCode().value());</span>
+<span class="nc" id="L25">        errorBody.put(&quot;error&quot;, getReasonPhrase(ex.getStatusCode()));</span>
+<span class="nc bnc" id="L26" title="All 2 branches missed.">        errorBody.put(&quot;message&quot;, ex.getReason() != null ? ex.getReason() : ex.getMessage());</span>
+<span class="nc" id="L27">        errorBody.put(&quot;path&quot;, exchange.getRequest().getPath().value());</span>
+<span class="nc" id="L28">        return Mono.just(ResponseEntity.status(ex.getStatusCode()).body(errorBody));</span>
+    }
+
+    private String getReasonPhrase(HttpStatusCode statusCode) {
+<span class="nc bnc" id="L32" title="All 2 branches missed.">        if (statusCode instanceof HttpStatus) {</span>
+<span class="nc" id="L33">            return ((HttpStatus) statusCode).getReasonPhrase();</span>
+        }
+<span class="nc" id="L35">        return statusCode.toString();</span>
+    }
+
+    @ExceptionHandler(Exception.class)
+    public Mono&lt;ResponseEntity&lt;Map&lt;String, Object&gt;&gt;&gt; handleGenericException(Exception ex, ServerWebExchange exchange) {
+<span class="nc" id="L40">        Map&lt;String, Object&gt; errorBody = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L41">        errorBody.put(&quot;status&quot;, HttpStatus.INTERNAL_SERVER_ERROR.value());</span>
+<span class="nc" id="L42">        errorBody.put(&quot;error&quot;, HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());</span>
+<span class="nc" id="L43">        errorBody.put(&quot;message&quot;, ex.getMessage());</span>
+<span class="nc" id="L44">        errorBody.put(&quot;path&quot;, exchange.getRequest().getPath().value());</span>
+<span class="nc" id="L45">        return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorBody));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

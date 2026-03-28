@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AccountServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">account-service</a> &gt; <a href="index.source.html" class="el_package">com.nttdata.accountservice.domain.service.impl</a> &gt; <span class="el_source">AccountServiceImpl.java</span></div><h1>AccountServiceImpl.java</h1><pre class="source lang-java linenums">package com.nttdata.accountservice.domain.service.impl;
+
+import com.nttdata.accountservice.api.dto.AccountCreateRequestDto;
+import com.nttdata.accountservice.api.dto.AccountEventAvroDto;
+import com.nttdata.accountservice.api.dto.AccountOperationRequestDto;
+import com.nttdata.accountservice.api.dto.AccountResponseDto;
+import com.nttdata.accountservice.api.dto.AccountUpdateRequestDto;
+import com.nttdata.accountservice.domain.mapper.AccountMapper;
+import com.nttdata.accountservice.domain.policy.AccountValidationPolicy;
+import com.nttdata.accountservice.domain.port.AccountCachePort;
+import com.nttdata.accountservice.domain.port.AccountEventPublisherPort;
+import com.nttdata.accountservice.domain.port.AccountRepositoryPort;
+import com.nttdata.accountservice.domain.port.AccountRecord;
+import com.nttdata.accountservice.domain.port.CustomerValidationPort;
+import com.nttdata.accountservice.domain.service.AccountService;
+import com.nttdata.accountservice.generated.api.AccountsApiDelegate;
+import com.nttdata.accountservice.generated.model.AccountResponse;
+import com.nttdata.accountservice.generated.model.BalanceOperationRequest;
+import com.nttdata.accountservice.generated.model.CreateAccountRequest;
+import com.nttdata.accountservice.generated.model.UpdateAccountRequest;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
+<span class="fc" id="L34">@Slf4j</span>
+@Service
+<span class="fc" id="L36">@RequiredArgsConstructor</span>
+public class AccountServiceImpl implements AccountService, AccountsApiDelegate {
+
+    private final AccountValidationPolicy accountValidationPolicy;
+    private final AccountRepositoryPort accountRepositoryPort;
+    private final CustomerValidationPort customerValidationPort;
+    private final AccountEventPublisherPort accountEventPublisherPort;
+    private final AccountCachePort accountCachePort;
+
+    @Override
+    public Mono&lt;AccountResponseDto&gt; create(AccountCreateRequestDto request, String requestedBy) {
+<span class="fc" id="L47">        accountValidationPolicy.validateRequestedBy(requestedBy);</span>
+<span class="fc" id="L48">        accountValidationPolicy.validateCreate(request);</span>
+
+<span class="fc" id="L50">        return customerValidationPort.existsCustomer(request.getCustomerId(), requestedBy)</span>
+<span class="fc" id="L51">                .publishOn(Schedulers.parallel())</span>
+<span class="fc" id="L52">                .doOnNext(exists -&gt; accountValidationPolicy.validateCustomerExists(exists, request.getCustomerId()))</span>
+<span class="fc" id="L53">                .flatMap(valid -&gt; accountRepositoryPort.findByAccountNumber(request.getAccountNumber()))</span>
+<span class="pc" id="L54">                .flatMap(existing -&gt; Mono.&lt;AccountResponseDto&gt;error(</span>
+                        new ResponseStatusException(HttpStatus.CONFLICT, &quot;Account already exists&quot;)))
+<span class="fc" id="L56">                .switchIfEmpty(Mono.defer(() -&gt; accountRepositoryPort</span>
+<span class="fc" id="L57">                        .save(AccountMapper.toNewRecord(request, requestedBy))</span>
+<span class="fc" id="L58">                        .flatMap(saved -&gt; accountCachePort.putBalance(saved.accountId(), saved.balance())</span>
+<span class="fc" id="L59">                                .then(accountEventPublisherPort.publish(AccountEventAvroDto.builder()</span>
+<span class="fc" id="L60">                                        .eventType(&quot;ACCOUNT_CREATED&quot;)</span>
+<span class="fc" id="L61">                                        .accountId(saved.accountId())</span>
+<span class="fc" id="L62">                                        .customerId(saved.customerId())</span>
+<span class="fc" id="L63">                                        .balance(saved.balance())</span>
+<span class="fc" id="L64">                                        .build()))</span>
+<span class="fc" id="L65">                                .thenReturn(saved))</span>
+<span class="fc" id="L66">                        .map(AccountMapper::toDto)))</span>
+<span class="fc" id="L67">                .cast(AccountResponseDto.class)</span>
+<span class="fc" id="L68">                .subscribeOn(Schedulers.boundedElastic())</span>
+<span class="pc" id="L69">                .doOnError(ex -&gt; log.error(&quot;Error creating account accountNumber={}&quot;, request.getAccountNumber(), ex))</span>
+<span class="fc" id="L70">                .onErrorResume(DuplicateKeyException.class,</span>
+<span class="nc" id="L71">                        ex -&gt; Mono.error(new ResponseStatusException(HttpStatus.CONFLICT, &quot;Account already exists&quot;)));</span>
+    }
+
+    @Override
+    public Mono&lt;AccountResponseDto&gt; findById(String accountId) {
+<span class="nc" id="L76">        accountValidationPolicy.validateAccountId(accountId);</span>
+
+<span class="nc" id="L78">        return accountRepositoryPort.findById(accountId)</span>
+<span class="nc" id="L79">                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Account not found&quot;)))</span>
+<span class="nc" id="L80">                .publishOn(Schedulers.parallel())</span>
+<span class="nc" id="L81">                .map(AccountMapper::toDto)</span>
+<span class="nc" id="L82">                .doOnError(ex -&gt; log.error(&quot;Error retrieving accountId={}&quot;, accountId, ex));</span>
+    }
+
+    @Override
+    public Flux&lt;AccountResponseDto&gt; findAll(String customerId) {
+<span class="pc bpc" id="L87" title="3 of 4 branches missed.">        Flux&lt;AccountRecord&gt; source = customerId == null || customerId.isBlank()</span>
+<span class="fc" id="L88">                ? accountRepositoryPort.findAll()</span>
+<span class="pc" id="L89">                : accountRepositoryPort.findByCustomerId(customerId);</span>
+
+<span class="fc" id="L91">        return source</span>
+<span class="fc" id="L92">                .publishOn(Schedulers.parallel())</span>
+<span class="fc" id="L93">                .map(AccountMapper::toDto)</span>
+<span class="fc" id="L94">                .doOnError(ex -&gt; log.error(&quot;Error listing accounts customerId={}&quot;, customerId, ex))</span>
+<span class="fc" id="L95">                .collectList()</span>
+<span class="fc" id="L96">                .onErrorReturn(List.of())</span>
+<span class="fc" id="L97">                .flatMapMany(Flux::fromIterable);</span>
+    }
+
+    @Override
+    public Mono&lt;AccountResponseDto&gt; update(String accountId, AccountUpdateRequestDto request, String requestedBy) {
+<span class="nc" id="L102">        accountValidationPolicy.validateRequestedBy(requestedBy);</span>
+<span class="nc" id="L103">        accountValidationPolicy.validateUpdate(accountId, request);</span>
+
+<span class="nc" id="L105">        return accountRepositoryPort.findById(accountId)</span>
+<span class="nc" id="L106">                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Account not found&quot;)))</span>
+<span class="nc" id="L107">                .map(current -&gt; AccountMapper.mergeStatus(current, request))</span>
+<span class="nc" id="L108">                .publishOn(Schedulers.boundedElastic())</span>
+<span class="nc" id="L109">                .flatMap(accountRepositoryPort::save)</span>
+<span class="nc" id="L110">                .flatMap(saved -&gt; accountEventPublisherPort.publish(AccountEventAvroDto.builder()</span>
+<span class="nc" id="L111">                        .eventType(&quot;ACCOUNT_UPDATED&quot;)</span>
+<span class="nc" id="L112">                        .accountId(saved.accountId())</span>
+<span class="nc" id="L113">                        .customerId(saved.customerId())</span>
+<span class="nc" id="L114">                        .balance(saved.balance())</span>
+<span class="nc" id="L115">                        .build()).thenReturn(saved))</span>
+<span class="nc" id="L116">                .map(AccountMapper::toDto)</span>
+<span class="nc" id="L117">                .doOnError(ex -&gt; log.error(&quot;Error updating accountId={}&quot;, accountId, ex))</span>
+<span class="nc" id="L118">                .onErrorResume(DuplicateKeyException.class,</span>
+<span class="nc" id="L119">                        ex -&gt; Mono.error(new ResponseStatusException(HttpStatus.CONFLICT, &quot;Duplicated account data&quot;)));</span>
+    }
+
+    @Override
+    public Mono&lt;Void&gt; delete(String accountId, String requestedBy) {
+<span class="nc" id="L124">        accountValidationPolicy.validateRequestedBy(requestedBy);</span>
+<span class="nc" id="L125">        accountValidationPolicy.validateAccountId(accountId);</span>
+
+<span class="nc" id="L127">        return accountRepositoryPort.findById(accountId)</span>
+<span class="nc" id="L128">                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Account not found&quot;)))</span>
+<span class="nc" id="L129">                .flatMap(existing -&gt; accountRepositoryPort.deleteById(existing.accountId())</span>
+<span class="nc" id="L130">                        .then(accountCachePort.evictBalance(existing.accountId())))</span>
+<span class="nc" id="L131">                .doOnError(ex -&gt; log.error(&quot;Error deleting accountId={}&quot;, accountId, ex))</span>
+<span class="nc" id="L132">                .onErrorResume(ResponseStatusException.class, Mono::error);</span>
+    }
+
+    @Override
+    public Mono&lt;AccountResponseDto&gt; operate(String accountId, AccountOperationRequestDto request, String requestedBy) {
+<span class="fc" id="L137">        accountValidationPolicy.validateRequestedBy(requestedBy);</span>
+<span class="fc" id="L138">        accountValidationPolicy.validateOperation(accountId, request);</span>
+
+<span class="fc" id="L140">        return accountCachePort.registerOperation(request.getOperationId())</span>
+<span class="fc" id="L141">                .flatMap(registered -&gt; {</span>
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">                    if (!registered) {</span>
+<span class="nc" id="L143">                        return findById(accountId);</span>
+                    }
+<span class="fc" id="L145">                    return accountRepositoryPort.findById(accountId)</span>
+<span class="fc" id="L146">                            .switchIfEmpty(Mono.error(</span>
+                                    new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Account not found&quot;)))
+<span class="fc" id="L148">                            .map(current -&gt; AccountMapper.applyOperation(current, request))</span>
+<span class="fc" id="L149">                            .doOnNext(next -&gt; accountValidationPolicy.validateSufficientBalance(next.balance()))</span>
+<span class="fc" id="L150">                            .publishOn(Schedulers.boundedElastic())</span>
+<span class="fc" id="L151">                            .flatMap(accountRepositoryPort::save)</span>
+<span class="fc" id="L152">                            .flatMap(saved -&gt; accountCachePort.putBalance(saved.accountId(), saved.balance())</span>
+<span class="fc" id="L153">                                    .then(accountEventPublisherPort.publish(AccountEventAvroDto.builder()</span>
+<span class="fc" id="L154">                                            .eventType(&quot;ACCOUNT_OPERATION&quot;)</span>
+<span class="fc" id="L155">                                            .accountId(saved.accountId())</span>
+<span class="fc" id="L156">                                            .customerId(saved.customerId())</span>
+<span class="fc" id="L157">                                            .operationId(request.getOperationId())</span>
+<span class="fc" id="L158">                                            .balance(saved.balance())</span>
+<span class="fc" id="L159">                                            .build()))</span>
+<span class="fc" id="L160">                                    .thenReturn(saved))</span>
+<span class="fc" id="L161">                            .map(AccountMapper::toDto)</span>
+<span class="pc" id="L162">                            .doOnError(ex -&gt; log.error(&quot;Error applying operation accountId={}&quot;, accountId, ex))</span>
+<span class="pc" id="L163">                            .onErrorResume(ex -&gt; Mono.just(new AccountResponseDto()));</span>
+                });
+    }
+
+    @Override
+    public Mono&lt;ResponseEntity&lt;AccountResponse&gt;&gt; createAccount(
+            Mono&lt;CreateAccountRequest&gt; createAccountRequest,
+            ServerWebExchange exchange) {
+<span class="fc" id="L171">        return createAccountRequest</span>
+<span class="fc" id="L172">                .map(AccountMapper::toCreateDto)</span>
+<span class="fc" id="L173">                .flatMap(request -&gt; create(request, authenticatedUser(exchange)))</span>
+<span class="fc" id="L174">                .map(AccountMapper::toGenerated)</span>
+<span class="fc" id="L175">                .map(body -&gt; ResponseEntity.status(HttpStatus.CREATED).body(body));</span>
+    }
+
+    @Override
+    public Mono&lt;ResponseEntity&lt;Void&gt;&gt; deleteAccount(String accountId, ServerWebExchange exchange) {
+<span class="nc" id="L180">        return delete(accountId, authenticatedUser(exchange))</span>
+<span class="nc" id="L181">                .thenReturn(ResponseEntity.noContent().build());</span>
+    }
+
+    @Override
+    public Mono&lt;ResponseEntity&lt;AccountResponse&gt;&gt; getAccountById(String accountId, ServerWebExchange exchange) {
+<span class="nc" id="L186">        return findById(accountId)</span>
+<span class="nc" id="L187">                .map(AccountMapper::toGenerated)</span>
+<span class="nc" id="L188">                .map(ResponseEntity::ok);</span>
+    }
+
+    @Override
+    public Mono&lt;ResponseEntity&lt;Flux&lt;AccountResponse&gt;&gt;&gt; getAccounts(String customerId, ServerWebExchange exchange) {
+<span class="nc" id="L193">        Flux&lt;AccountResponse&gt; body = findAll(customerId).map(AccountMapper::toGenerated);</span>
+<span class="nc" id="L194">        return Mono.just(ResponseEntity.ok(body));</span>
+    }
+
+    @Override
+    public Mono&lt;ResponseEntity&lt;AccountResponse&gt;&gt; updateAccount(
+            String accountId,
+            Mono&lt;UpdateAccountRequest&gt; updateAccountRequest,
+            ServerWebExchange exchange) {
+<span class="nc" id="L202">        return updateAccountRequest</span>
+<span class="nc" id="L203">                .map(AccountMapper::toUpdateDto)</span>
+<span class="nc" id="L204">                .flatMap(request -&gt; update(accountId, request, authenticatedUser(exchange)))</span>
+<span class="nc" id="L205">                .map(AccountMapper::toGenerated)</span>
+<span class="nc" id="L206">                .map(ResponseEntity::ok);</span>
+    }
+
+    @Override
+    public Mono&lt;ResponseEntity&lt;AccountResponse&gt;&gt; operateBalance(
+            String accountId,
+            Mono&lt;BalanceOperationRequest&gt; balanceOperationRequest,
+            ServerWebExchange exchange) {
+<span class="nc" id="L214">        return balanceOperationRequest</span>
+<span class="nc" id="L215">                .map(AccountMapper::toOperationDto)</span>
+<span class="nc" id="L216">                .flatMap(request -&gt; operate(accountId, request, authenticatedUser(exchange)))</span>
+<span class="nc" id="L217">                .map(AccountMapper::toGenerated)</span>
+<span class="nc" id="L218">                .map(ResponseEntity::ok);</span>
+    }
+
+    private String authenticatedUser(ServerWebExchange exchange) {
+<span class="fc" id="L222">        String requestedBy = exchange.getRequest().getHeaders().getFirst(&quot;X-Auth-User&quot;);</span>
+<span class="pc bpc" id="L223" title="2 of 4 branches missed.">        if (requestedBy == null || requestedBy.isBlank()) {</span>
+<span class="nc" id="L224">            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, &quot;Missing authenticated user&quot;);</span>
+        }
+<span class="fc" id="L226">        return requestedBy;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

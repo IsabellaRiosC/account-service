@@ -1,0 +1,4 @@
+com\nttdata\accountservice\AccountServiceApplicationTests.class
+com\nttdata\accountservice\domain\service\impl\AccountServiceImplTest.class
+com\nttdata\accountservice\api\AccountApiIntegrationTest.class
+com\nttdata\accountservice\infrastructure\client\CustomerValidationWebClientAdapterTest.class

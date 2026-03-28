@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "AccountEvent",
+  "namespace": "com.nttdata.accountservice.avro",
+  "fields": [
+    { "name": "eventType", "type": "string" },
+    { "name": "accountId", "type": "string" },
+    { "name": "customerId", "type": ["null", "string"], "default": null },
+    { "name": "balance", "type": ["null", "double"], "default": null },
+    { "name": "operationId", "type": ["null", "string"], "default": null },
+    { "name": "eventAt", "type": "string" }
+  ]
+}

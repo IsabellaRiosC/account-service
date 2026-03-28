@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LoggingAccountUseCaseDecorator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">account-service</a> &gt; <a href="index.source.html" class="el_package">com.nttdata.accountservice.infrastructure.decorator</a> &gt; <span class="el_source">LoggingAccountUseCaseDecorator.java</span></div><h1>LoggingAccountUseCaseDecorator.java</h1><pre class="source lang-java linenums">package com.nttdata.accountservice.infrastructure.decorator;
+
+import com.nttdata.accountservice.api.dto.AccountCreateRequestDto;
+import com.nttdata.accountservice.api.dto.AccountOperationRequestDto;
+import com.nttdata.accountservice.api.dto.AccountResponseDto;
+import com.nttdata.accountservice.api.dto.AccountUpdateRequestDto;
+import com.nttdata.accountservice.domain.port.AccountUseCase;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+<span class="fc" id="L15">@Slf4j</span>
+@Component
+@Primary
+<span class="fc" id="L18">@RequiredArgsConstructor</span>
+public class LoggingAccountUseCaseDecorator implements AccountUseCase {
+
+    private final AccountUseCase delegate;
+
+    @Override
+    public Mono&lt;AccountResponseDto&gt; create(AccountCreateRequestDto request, String requestedBy) {
+<span class="nc" id="L25">        log.info(&quot;[AccountUseCase] create accountNumber={} by={}&quot;, request.getAccountNumber(), requestedBy);</span>
+<span class="nc" id="L26">        return delegate.create(request, requestedBy);</span>
+    }
+
+    @Override
+    public Mono&lt;AccountResponseDto&gt; findById(String accountId) {
+<span class="nc" id="L31">        log.info(&quot;[AccountUseCase] findById accountId={}&quot;, accountId);</span>
+<span class="nc" id="L32">        return delegate.findById(accountId);</span>
+    }
+
+    @Override
+    public Flux&lt;AccountResponseDto&gt; findAll(String customerId) {
+<span class="nc" id="L37">        log.info(&quot;[AccountUseCase] findAll customerId={}&quot;, customerId);</span>
+<span class="nc" id="L38">        return delegate.findAll(customerId);</span>
+    }
+
+    @Override
+    public Mono&lt;AccountResponseDto&gt; update(String accountId, AccountUpdateRequestDto request, String requestedBy) {
+<span class="nc" id="L43">        log.info(&quot;[AccountUseCase] update accountId={} by={}&quot;, accountId, requestedBy);</span>
+<span class="nc" id="L44">        return delegate.update(accountId, request, requestedBy);</span>
+    }
+
+    @Override
+    public Mono&lt;Void&gt; delete(String accountId, String requestedBy) {
+<span class="nc" id="L49">        log.info(&quot;[AccountUseCase] delete accountId={} by={}&quot;, accountId, requestedBy);</span>
+<span class="nc" id="L50">        return delegate.delete(accountId, requestedBy);</span>
+    }
+
+    @Override
+    public Mono&lt;AccountResponseDto&gt; operate(String accountId, AccountOperationRequestDto request, String requestedBy) {
+<span class="nc" id="L55">        log.info(&quot;[AccountUseCase] operate accountId={} opType={} opId={} by={}&quot;,</span>
+<span class="nc" id="L56">                accountId, request.getOperationType(), request.getOperationId(), requestedBy);</span>
+<span class="nc" id="L57">        return delegate.operate(accountId, request, requestedBy);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
